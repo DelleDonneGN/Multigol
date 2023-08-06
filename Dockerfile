@@ -1,3 +1,4 @@
+
 # syntax=docker/dockerfile:1
 
 # Comments are provided throughout this file to help you get started.
@@ -32,6 +33,7 @@ RUN adduser \
 # Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
 # Leverage a bind mount to requirements.txt to avoid having to copy them into
 # into this layer.
+RUN pip install --upgrade pip
 RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=bind,source=requirements.txt,target=requirements.txt \
     python -m pip install -r requirements.txt
@@ -42,8 +44,12 @@ USER appuser
 # Copy the source code into the container.
 COPY . .
 
+# Change working directory to /app/gastondd
+WORKDIR /app/gastondd
+
 # Expose the port that the application listens on.
 EXPOSE 8000
 
 # Run the application.
-CMD gunicorn 'gastondd.gastondd.wsgi' --bind=0.0.0.0:8000
+CMD ["gunicorn", "gastondd.wsgi", "--bind=0.0.0.0:8000", "--workers", "2"]
+#CMD ["gunicorn", "--bind", "0.0.0.0:8888", "--keyfile", "/cert/privkey3.pem", "--certfile", "/cert/fullchain3.pem",  "--timeout", "120", "--workers", "4", "webhook_mp:app"]
